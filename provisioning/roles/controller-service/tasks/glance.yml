@@ -1,0 +1,16 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/glance/glance-api.conf
+    - etc/glance/glance-registry.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/glance-42", command: "su -s /bin/sh -c \"glance-manage db_sync\" glance" }
+  tags: glance
+
+- service: name={{ item }} state=restarted
+  with_items:
+    - glance-registry
+    - glance-api
+  tags: glance

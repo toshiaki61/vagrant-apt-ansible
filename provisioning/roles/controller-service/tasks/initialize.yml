@@ -1,0 +1,79 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - mysql-server
+    - rabbitmq-server
+
+    - keystone
+
+    - glance
+    - python-glanceclient
+
+    - nova-api
+    - nova-cert
+    - nova-conductor
+    - nova-consoleauth
+    - nova-novncproxy
+    - nova-scheduler
+    - python-novaclient
+
+    - neutron-server
+    - neutron-plugin-ml2
+
+    - apache2
+    - memcached
+    - libapache2-mod-wsgi
+    - openstack-dashboard
+
+    - cinder-api
+    - cinder-scheduler
+
+    - lvm2
+    - cinder-volume
+
+    - swift
+    - swift-account
+    - swift-container
+    - swift-object
+    - xfsprogs
+
+    - swift-proxy
+    - memcached
+    - python-keystoneclient
+    - python-swiftclient
+    - python-webob
+
+    # - heat-api
+    # - heat-api-cfn
+    # - heat-engine
+
+    - ceilometer-api
+    - ceilometer-collector
+    - ceilometer-agent-central
+    - ceilometer-agent-notification
+    - ceilometer-alarm-evaluator
+    - ceilometer-alarm-notifier
+    - python-ceilometerclient
+    - mongodb-server
+
+    # - python-trove
+    # - python-troveclient
+    # - python-glanceclient
+    # - trove-common
+    # - trove-api
+    # - trove-taskmanager
+
+- copy: src={{ item }} dest=~/.tmp/{{ item }}
+  with_items:
+    - keystonerc
+  tags: server
+
+- apt: name=openstack-dashboard-ubuntu-theme state=absent purge=yes
+
+- file: path=/var/lib/{{ item }}.sqlite state=absent
+  with_items:
+    - neutron/neutron
+    - cinder/cinder
+    - heat/heat
+    - ceilometer/ceilometer
+    - nova/nova

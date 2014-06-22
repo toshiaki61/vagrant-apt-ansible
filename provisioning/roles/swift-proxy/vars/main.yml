@@ -1,0 +1,11 @@
+PROXY_LOCAL_NET_IP: "{{ ansible_eth2.ipv4.address }}"
+
+ZONE: 1
+STORAGE_LOCAL_NET_IP: 10.0.0.51
+STORAGE_REPLICATION_NET_IP: 10.0.10.51
+DEVICE: sdb1
+
+STORAGE_LOCAL_NET_IP_1: 10.0.0.51
+
+SWIFT_STORAGES:
+  - { index: "~/.executed/storage-01", user: vagrant, target: storage1 }

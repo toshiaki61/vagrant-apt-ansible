@@ -1,0 +1,11 @@
+---
+- include: playbooks/common.yml
+- include: playbooks/controller.yml
+- include: playbooks/network.yml
+- include: playbooks/compute.yml
+- include: playbooks/block.yml
+- include: playbooks/storage.yml
+- include: playbooks/proxy.yml
+- include: playbooks/orchestration.yml
+- include: playbooks/telemetry.yml
+- include: playbooks/database.yml

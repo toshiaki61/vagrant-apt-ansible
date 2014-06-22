@@ -1,0 +1,37 @@
+---
+- shell: "echo $(keystone tenant-list | awk '/ service / { print $2 }')"
+  register: SERVICE_TENANT_ID
+  environment: ADMIN_OPENRC
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/neutron/neutron.conf
+    - etc/neutron/plugins/ml2/ml2_conf.ini
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items:
+    - nova-api
+    - nova-scheduler
+    - nova-conductor
+    - neutron-server
+  tags: neutron
+
+
+- wait_for: delay=5 host=10.0.0.11 port=9696
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/network-81", command: "neutron net-create ext-net --shared --router:external=True" }
+    - { index: "~/.executed/network-82", command: "neutron subnet-create ext-net --name ext-subnet --allocation-pool start={{ FLOATING_IP_START }},end={{ FLOATING_IP_END }} --disable-dhcp --gateway {{ EXTERNAL_NETWORK_GATEWAY }} {{ EXTERNAL_NETWORK_CIDR }}" }
+  environment: ADMIN_OPENRC
+  tags: network
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/network-91", command: "neutron net-create demo-net" }
+    - { index: "~/.executed/network-92", command: "neutron subnet-create demo-net --name demo-subnet --gateway {{ TENANT_NETWORK_GATEWAY }} {{ TENANT_NETWORK_CIDR }}" }
+    - { index: "~/.executed/network-93", command: "neutron router-create demo-router" }
+    - { index: "~/.executed/network-94", command: "neutron router-interface-add demo-router demo-subnet" }
+    - { index: "~/.executed/network-95", command: "neutron router-gateway-set demo-router ext-net" }
+  environment: DEMO_OPENRC
+  tags: network

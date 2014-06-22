@@ -1,0 +1,39 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - swift
+    - swift-account
+    - swift-container
+    - swift-object
+    - xfsprogs
+  tags: swift-storage
+
+- copy: src={{ item }} dest=~/.tmp/{{ item }}
+  with_items:
+    - fdisk
+  tags: swift-storage
+
+- file: state=directory path={{ item }} group=swift owner=swift
+  with_items:
+    - /etc/swift
+    - /var/swift/keystone-signing
+    - /var/swift/recon
+    - /srv/node/sdb1
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/swift/swift.conf
+    - etc/rsyncd.conf
+    - etc/default/rsync
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/swift-storage-11", command: "cat ~/.tmp/fdisk | sudo fdisk /dev/sdb" }
+    - { index: "~/.executed/swift-storage-12", command: "mkfs.xfs /dev/sdb1" }
+    - { index: "~/.executed/swift-storage-13", command: "echo \"/dev/sdb1 /srv/node/sdb1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0\" | sudo tee -a /etc/fstab" }
+    - { index: "~/.executed/swift-storage-14", command: "mount -t xfs /dev/sdb1 /srv/node/sdb1" }
+    - { index: "~/.executed/swift-storage-15", command: "chown -R swift:swift /srv/node/sdb1" }
+  tags: swift-storage
+
+- service: name=rsync state=started enabled=yes
+  tags: swift-storage

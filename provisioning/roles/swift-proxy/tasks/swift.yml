@@ -1,0 +1,49 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - swift
+    - swift-proxy
+    - memcached
+    - python-keystoneclient
+    - python-swiftclient
+    - python-webob
+
+- file: state=directory path={{ item }} group=swift owner=swift
+  with_items:
+    - "/etc/swift"
+    - "/var/lib/swift/keystone-signing"
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/memcached.conf
+    - etc/swift/proxy-server.conf
+    - etc/swift/swift.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }} chdir=/etc/swift"
+  with_items:
+    - { index: "~/.executed/swift-proxy-30", command: "sudo -u swift swift-ring-builder account.builder create 18 3 1" }
+    - { index: "~/.executed/swift-proxy-31", command: "sudo -u swift swift-ring-builder container.builder create 18 3 1" }
+    - { index: "~/.executed/swift-proxy-32", command: "sudo -u swift swift-ring-builder object.builder create 18 3 1" }
+    - { index: "~/.executed/swift-proxy-33", command: "sudo -u swift swift-ring-builder account.builder add z{{ ZONE }}-{{ STORAGE_LOCAL_NET_IP }}:6002R{{ STORAGE_REPLICATION_NET_IP }}:6005/{{ DEVICE }} 100" }
+    - { index: "~/.executed/swift-proxy-34", command: "sudo -u swift swift-ring-builder container.builder add z{{ ZONE }}-{{ STORAGE_LOCAL_NET_IP_1 }}:6001R{{ STORAGE_REPLICATION_NET_IP }}:6004/{{ DEVICE }} 100" }
+    - { index: "~/.executed/swift-proxy-35", command: "sudo -u swift swift-ring-builder object.builder add z{{ ZONE }}-{{ STORAGE_LOCAL_NET_IP_1 }}:6000R{{ STORAGE_REPLICATION_NET_IP }}:6003/{{ DEVICE }} 100" }
+    - { index: "~/.executed/swift-proxy-36", command: "sudo -u swift swift-ring-builder account.builder" }
+    - { index: "~/.executed/swift-proxy-37", command: "sudo -u swift swift-ring-builder container.builder" }
+    - { index: "~/.executed/swift-proxy-38", command: "sudo -u swift swift-ring-builder object.builder" }
+    - { index: "~/.executed/swift-proxy-39", command: "sudo -u swift swift-ring-builder account.builder rebalance" }
+    - { index: "~/.executed/swift-proxy-40", command: "sudo -u swift swift-ring-builder container.builder rebalance" }
+    - { index: "~/.executed/swift-proxy-41", command: "sudo -u swift swift-ring-builder object.builder rebalance" }
+
+- file: state=directory path={{ item }} group=swift owner=swift recurse=yes
+  with_items:
+    - "/etc/swift"
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items: 
+    - swift-proxy
+
+- shell: "sudo -u {{ item.user }} rsync -av /etc/swift/*.ring.gz {{ item.user }}@{{ item.target }}:~/ && sudo -u {{ item.user }} rsync -av /etc/swift/*.builder {{ item.user }}@{{ item.target }}:~/ && sudo -u {{ item.user }} ssh {{ item.user }}@{{ item.target }} \"sudo mv ~/* /etc/swift && sudo chown -R swift:swift /etc/swift && sudo swift-init all start\" && touch {{ item.index }} creates={{ item.index }}"
+  with_items: SWIFT_STORAGES
+
+
+

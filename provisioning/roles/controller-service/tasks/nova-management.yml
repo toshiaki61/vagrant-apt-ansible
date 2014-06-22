@@ -1,0 +1,20 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/nova/nova.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/nova-51", command: "su -s /bin/sh -c \"nova-manage db sync\" nova" }
+  tags: nova
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items:
+    - nova-api
+    - nova-cert
+    - nova-consoleauth
+    - nova-scheduler
+    - nova-conductor
+    - nova-novncproxy
+  tags: nova
+

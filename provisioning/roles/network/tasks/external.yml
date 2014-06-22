@@ -1,0 +1,15 @@
+---
+- copy: src={{ item }} dest=~/.tmp/{{ item }}
+  with_items:
+    - interfaces
+  tags: external
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/external-01", command: "cat ~/.tmp/interfaces | sed 's/%INTERFACE_NAME%/{{ INTERFACE_NAME }}/g' | sudo tee -a /etc/network/interfaces" }
+    - { index: "~/.executed/external-02", command: "ifdown {{ INTERFACE_NAME }}" }
+    - { index: "~/.executed/external-03", command: "ifup {{ INTERFACE_NAME }}" }
+  tags: external
+
+# - service: name=network state=restarted
+#   tags: external

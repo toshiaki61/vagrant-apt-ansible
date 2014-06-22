@@ -1,0 +1,9 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/ceilometer/ceilometer.conf
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items: 
+    - ceilometer-agent-compute
+  tags: ceilometer-compute

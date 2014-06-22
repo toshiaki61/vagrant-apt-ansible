@@ -1,0 +1,1 @@
+STORAGE_LOCAL_NET_IP: "{{ ansible_eth2.ipv4.address }}"

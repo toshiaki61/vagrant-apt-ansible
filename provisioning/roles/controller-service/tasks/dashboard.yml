@@ -1,0 +1,21 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/openstack-dashboard/local_settings.py
+    - etc/apache2/conf-available/servername.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/dashboard-05", command: "a2enconf servername" }
+
+    - { index: "~/.executed/dashboard-13", command: "/usr/share/openstack-dashboard/manage.py syncdb --noinput" }
+
+- file: state=file path={{ item }} group=horizon owner=horizon
+  with_items:
+    - /var/lib/openstack-dashboard/secret_key
+
+- service: name={{ item }} state=restarted
+  with_items:
+    - apache2
+    - memcached
+  tags: dashboard

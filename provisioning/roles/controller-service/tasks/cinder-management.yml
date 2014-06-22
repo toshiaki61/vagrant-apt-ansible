@@ -1,0 +1,22 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - cinder-api
+    - cinder-scheduler
+  tags: cinder
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/cinder/cinder.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/cinder-21", command: "su -s /bin/sh -c \"cinder-manage db sync\" cinder" }
+  tags: cinder
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items:
+    - cinder-scheduler
+    - cinder-api
+  tags: cinder
+

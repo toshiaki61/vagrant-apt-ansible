@@ -1,0 +1,28 @@
+---
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/neutron-01", command: "cp /etc/sysctl.conf /etc/sysctl.conf.orig" }
+    - { index: "~/.executed/neutron-02", command: "sed -i 's,net.ipv4.conf.all.rp_filter.*,net.ipv4.conf.all.rp_filter=0,g' /etc/sysctl.conf" }
+    - { index: "~/.executed/neutron-03", command: "sed -i 's,net.ipv4.conf.default.rp_filter.*,net.ipv4.conf.default.rp_filter=0,g' /etc/sysctl.conf" }
+    - { index: "~/.executed/neutron-04", command: "sysctl -p" }
+  tags: neutron-compute
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/neutron/plugins/ml2/ml2_conf.ini
+    - etc/neutron/neutron.conf
+
+- service: name={{ item }} state=restarted
+  with_items:
+    - openvswitch-switch
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/neutron-21", command: "ovs-vsctl add-br br-int" }
+
+- service: name={{ item }} state=restarted
+  with_items:
+    - nova-compute
+    - neutron-plugin-openvswitch-agent
+
+

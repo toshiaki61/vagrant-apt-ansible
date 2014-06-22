@@ -1,0 +1,20 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/mysql/my.cnf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/server-02", command: "rabbitmqctl change_password guest {{ RABBIT_PASS }}" }
+  tags: server
+
+- service: name=mysql state=restarted
+  tags: server
+
+- mysql_db: db={{ item.name }} state=present encoding=utf8
+  with_items: DATABASE_USERS
+  tags: server
+
+- mysql_user: name={{ item.name }} password="{{ item.password }}" priv={{ item.name }}.*:ALL host={{ item.host }} state=present
+  with_items: DATABASE_USERS
+  tags: server

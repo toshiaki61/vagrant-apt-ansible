@@ -1,0 +1,8 @@
+Host controller
+	StrictHostKeyChecking no
+Host network
+	StrictHostKeyChecking no
+Host compute1
+	StrictHostKeyChecking no
+Host storage1
+	StrictHostKeyChecking no

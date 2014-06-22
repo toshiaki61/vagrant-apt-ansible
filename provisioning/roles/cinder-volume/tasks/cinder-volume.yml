@@ -1,0 +1,28 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - lvm2
+    - cinder-volume
+  tags: cinder-volume
+
+- file: path=/var/lib/{{ item }}.sqlite state=absent
+  with_items:
+    - cinder/cinder
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/cinder/cinder.conf
+    - etc/lvm/lvm.conf
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/cinder-volume-01", command: "pvcreate /dev/sdb" }
+    - { index: "~/.executed/cinder-volume-02", command: "vgcreate cinder-volumes /dev/sdb" }
+  tags: cinder-volume
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items:
+    - cinder-volume
+    - tgt
+  tags: cinder-volume
+

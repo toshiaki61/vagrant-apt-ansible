@@ -1,0 +1,5 @@
+---
+- hosts: database-node
+  sudo: yes
+  roles:
+    - ../roles/trove-management

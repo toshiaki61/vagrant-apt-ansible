@@ -1,0 +1,10 @@
+---
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/nova/nova.conf
+    - etc/nova/nova-compute.conf
+
+- service: name={{ item }} state=restarted
+  with_items:
+    - nova-compute
+  tags: nova

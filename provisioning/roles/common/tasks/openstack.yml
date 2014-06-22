@@ -1,0 +1,42 @@
+---
+- file: state=directory path={{ item }}
+  with_items:
+    - "~/.executed"
+    - "~/.tmp"
+
+- copy: src={{ item }} dest=~/.tmp/{{ item }}
+  with_items:
+    - hosts
+    - id_rsa
+    - id_rsa.pub
+    - ssh_config
+
+- apt: update_cache=yes
+- apt: upgrade=dist
+- apt: name={{ item }} state=present
+  with_items:
+    - ntp
+    - language-pack-ja-base
+    - language-pack-ja
+    - python-mysqldb
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/openstack-01", command: "sed -i 's/^127/#127/g' /etc/hosts" }
+    - { index: "~/.executed/openstack-02", command: "cat ~/.tmp/hosts | sudo tee -a /etc/hosts" }
+    - { index: "~/.executed/openstack-03", command: "sed -i 's/^server/#server/g' /etc/ntp.conf " }
+    - { index: "~/.executed/openstack-04", command: "echo 'server ntp1.jst.mfeed.ad.jp' | sudo tee -a /etc/ntp.conf" }
+    - { index: "~/.executed/openstack-05", command: "echo 'server ntp2.jst.mfeed.ad.jp' | sudo tee -a /etc/ntp.conf" }
+    - { index: "~/.executed/openstack-06", command: "echo 'server ntp3.jst.mfeed.ad.jp' | sudo tee -a /etc/ntp.conf" }
+    - { index: "~/.executed/openstack-07", command: "echo 'restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap' | sudo tee -a /etc/ntp.conf" }
+    - { index: "~/.executed/openstack-08", command: "update-locale LANG=ja_JP.UTF-8 LANGUAGE=\"ja_JP:ja\"" }
+    - { index: "~/.executed/openstack-09", command: "echo \"Asia/Tokyo\" > /etc/timezone" }
+    - { index: "~/.executed/openstack-10", command: "dpkg-reconfigure -f noninteractive tzdata" }
+    - { index: "~/.executed/openstack-31", command: "mv ~/.tmp/id_rsa .ssh/" }
+    - { index: "~/.executed/openstack-32", command: "cat ~/.tmp/id_rsa.pub | sudo tee -a .ssh/authorized_keys" }
+    - { index: "~/.executed/openstack-33", command: "cat ~/.tmp/ssh_config | sudo tee -a .ssh/config" }
+    - { index: "~/.executed/openstack-34", command: "rm -f ~/.tmp/id_rsa.pub" }
+    - { index: "~/.executed/openstack-35", command: "rm -f ~/.tmp/ssh_config" }
+
+
+- service: name=ntp state=restarted enabled=yes

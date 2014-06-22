@@ -1,0 +1,59 @@
+[DEFAULT]
+default_store = file
+known_stores = glance.store.filesystem.Store,
+               glance.store.swift.Store
+bind_host = 0.0.0.0
+bind_port = 9292
+log_file = /var/log/glance/api.log
+backlog = 4096
+workers = 1
+registry_host = 0.0.0.0
+registry_port = 9191
+registry_client_protocol = http
+#rabbit_host = localhost
+rabbit_port = 5672
+rabbit_use_ssl = false
+rabbit_userid = guest
+#rabbit_password = guest
+rabbit_virtual_host = /
+rabbit_notification_exchange = glance
+rabbit_notification_topic = notifications
+rabbit_durable_queues = False
+
+filesystem_store_datadir = /var/lib/glance/images/
+
+delayed_delete = False
+scrub_time = 43200
+scrubber_datadir = /var/lib/glance/scrubber
+image_cache_dir = /var/lib/glance/image-cache/
+
+notification_driver = messaging
+rpc_backend = rabbit
+rabbit_host = controller
+rabbit_password = {{ RABBIT_PASS }}
+
+[database]
+#sqlite_db = /var/lib/glance/glance.sqlite
+backend = sqlalchemy
+
+connection = mysql://glance:{{ GLANCE_DBPASS }}@controller/glance
+
+[keystone_authtoken]
+#auth_host = 127.0.0.1
+auth_port = 35357
+auth_protocol = http
+#admin_tenant_name = %SERVICE_TENANT_NAME%
+#admin_user = %SERVICE_USER%
+#admin_password = %SERVICE_PASSWORD%
+
+auth_uri = http://controller:5000
+auth_host = controller
+admin_tenant_name = service
+admin_user = glance
+admin_password = {{ GLANCE_PASS }}
+
+[paste_deploy]
+
+flavor = keystone
+
+[store_type_location_strategy]

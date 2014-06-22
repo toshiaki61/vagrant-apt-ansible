@@ -1,0 +1,24 @@
+# ---
+- apt: name={{ item }} state=installed
+  with_items:
+    - heat-api
+    - heat-api-cfn
+    - heat-engine
+
+- file: path=/var/lib/{{ item }}.sqlite state=absent
+  with_items:
+    - heat/heat
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes
+  with_items:
+    - etc/heat/heat.conf
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/heat-21", command: "su -s /bin/sh -c \"heat-manage db_sync\" heat" }
+  tags: heat
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items: 
+    - heat-api
+    - heat-api-cfn
+    - heat-engine

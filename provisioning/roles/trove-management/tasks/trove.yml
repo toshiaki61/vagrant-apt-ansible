@@ -1,0 +1,40 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - python-trove
+    - python-troveclient
+    - python-glanceclient
+    - trove-common
+    - trove-api
+    - trove-taskmanager
+
+- template: src={{ item }}.j2 dest=/{{ item }} backup=yes owner=trove group=trove
+  with_items:
+    - etc/trove/trove.conf
+    - etc/trove/trove-conductor.conf
+    - etc/trove/trove-taskmanager.conf
+    - etc/trove/trove-guestagent.conf
+    - etc/trove/api-paste.ini
+    - etc/init/trove-conductor.conf
+
+# - shell: "echo $(glance image-list | awk '/ cirros / { print $2 }')"
+#   register: GLANCE_IMAGE_ID
+#   environment: ADMIN_OPENRC
+
+- file: state=directory path={{ item.path }} owner=trove group=trove mode={{ item.mode }}
+  with_items:
+    - { path: "/var/log/trove", mode: "0744" }
+    - { path: "/var/lib/trove/keystone-signing", mode: "0700" }
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/trove-81", command: "su -s /bin/sh -c \"trove-manage db_sync\" trove" }
+    - { index: "~/.executed/trove-82", command: "su -s /bin/sh -c \"trove-manage datastore_update mysql ''\" trove" }
+    # - { index: "~/.executed/trove-83", command: "trove-manage --config-file=/etc/trove/trove.conf datastore_version_update mysql mysql-5.5 mysql {{ GLANCE_IMAGE_ID.stdout }} mysql-server-5.5 1" }
+
+- service: name={{ item }} state=restarted enabled=yes
+  with_items: 
+    - trove-api
+    - trove-taskmanager
+    - trove-conductor
+

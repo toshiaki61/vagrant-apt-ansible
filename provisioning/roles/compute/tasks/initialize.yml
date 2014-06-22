@@ -1,0 +1,16 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - nova-compute-qemu
+    - python-guestfs
+    - neutron-common
+    - neutron-plugin-ml2
+    - neutron-plugin-openvswitch-agent
+    - ceilometer-agent-compute
+
+- copy: src=statoverride dest=/etc/kernel/postinst.d/statoverride mode=755
+
+- file: path=/var/lib/{{ item }}.sqlite state=absent
+  with_items:
+    - ceilometer/ceilometer
+    - nova/nova
