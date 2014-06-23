@@ -37,6 +37,7 @@
     - { index: "~/.executed/openstack-33", command: "cat ~/.tmp/ssh_config | sudo tee -a .ssh/config" }
     - { index: "~/.executed/openstack-34", command: "rm -f ~/.tmp/id_rsa.pub" }
     - { index: "~/.executed/openstack-35", command: "rm -f ~/.tmp/ssh_config" }
+    - { index: "~/.executed/openstack-36", command: "chmod 600 .ssh/id_rsa" }
 
 
 - service: name=ntp state=restarted enabled=yes

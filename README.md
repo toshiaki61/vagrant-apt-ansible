@@ -31,4 +31,6 @@ ceilometer statistics -m image.download -p 60
 
 sudo -u trove trove-manage --config-file=/etc/trove/trove.conf datastore_version_update mysql mysql-5.5 mysql $(glance image-list | awk '/ cirros/ { print $2 }') mysql-server-5.5 1
 
-trove list #error
+trove list
+#update datastores set default_version_id='e00e990c-5e64-4047-8003-9f1b9e44809c' where name='mysql';
+trove --debug create db1 2 --size=2
