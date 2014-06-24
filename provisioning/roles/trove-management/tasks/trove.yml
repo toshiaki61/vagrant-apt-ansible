@@ -31,7 +31,7 @@
     - { index: "~/.executed/trove-81", command: "su -s /bin/sh -c \"trove-manage db_sync\" trove" }
     - { index: "~/.executed/trove-82", command: "su -s /bin/sh -c \"trove-manage datastore_update mysql ''\" trove" }
     # - { index: "~/.executed/trove-83", command: "trove-manage --config-file=/etc/trove/trove.conf datastore_version_update mysql mysql-5.5 mysql {{ GLANCE_IMAGE_ID.stdout }} mysql-server-5.5 1" }
-    - { index: "~/.executed/trove-84", command: "mysql -u trove -p{{ TROVE_DBPASS }} -h controller trove -e \"update datastores set default_version_id=(select datastore_versions.id from datastore_versions where datastores.id=datastore_versions.datastore_id limit 1)\""}
+    #- { index: "~/.executed/trove-84", command: "mysql -u trove -p{{ TROVE_DBPASS }} -h controller trove -e \"update datastores set default_version_id=(select datastore_versions.id from datastore_versions where datastores.id=datastore_versions.datastore_id limit 1)\""}
 
 - service: name={{ item }} state=restarted enabled=yes
   with_items: 
