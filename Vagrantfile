@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     box.vm.network :private_network, ip: "10.0.0.31", :netmask => "255.255.255.0"
     box.vm.network :private_network, ip: "10.0.10.31", :netmask => "255.255.255.0"
     box.vm.provider :virtualbox do |vbox|
-      vbox.customize ["modifyvm", :id, "--memory", "2048"]
+      vbox.customize ["modifyvm", :id, "--memory", "4096"]
     end
   end
   config.vm.define "network" do |box|

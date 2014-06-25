@@ -31,5 +31,12 @@ ceilometer statistics -m image.download -p 60
 
 
 trove --debug create trusty-mysql 2 --size=2
-
-
+wget http://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-amd64-disk1.img
+wget http://cloud-images.ubuntu.com/saucy/current/saucy-server-cloudimg-amd64-disk1.img
+wget http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img
+qemu-img convert -O qcow2 precise-server-cloudimg-amd64-disk1.img precise-mysql.qcow2
+qemu-img convert -O qcow2 saucy-server-cloudimg-amd64-disk1.img saucy-mysql.qcow2
+qemu-img convert -O qcow2 trusty-server-cloudimg-amd64-disk1.img trusty-mysql.qcow2
+glance image-create --name="precise" --disk-format=qcow2 --container-format=bare --is-public=true < precise-mysql.qcow2
+glance image-create --name="saucy" --disk-format=qcow2 --container-format=bare --is-public=true < saucy-mysql.qcow2
+glance image-create --name="trusty" --disk-format=qcow2 --container-format=bare --is-public=true < trusty-mysql.qcow2
