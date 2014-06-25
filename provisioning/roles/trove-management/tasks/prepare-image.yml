@@ -1,0 +1,21 @@
+---
+- apt: name={{ item }} state=installed
+  with_items:
+    - qemu-utils
+
+- get_url: url="http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img" dest=/vagrant/tmp/trusty-server-cloudimg-amd64-disk1.img
+- shell: "qemu-img convert -O qcow2 /vagrant/tmp/trusty-server-cloudimg-amd64-disk1.img /vagrant/tmp/trusty-mysql.qcow2 creates=/vagrant/tmp/trutsy-mysql.qcow2"
+
+
+- shell: "{{ item.command }} && touch {{ item.index }} creates={{ item.index }}"
+  with_items:
+    - { index: "~/.executed/trove-initialize-01", command: "glance image-create --name=\"trusty-mysql\" --disk-format=qcow2 --container-format=bare --is-public=true < /vagrant/tmp/trusty-mysql.qcow2" }
+    - { index: "~/.executed/trove-initialize-02", command: "sudo -u trove trove-manage --config-file=/etc/trove/trove.conf datastore_version_update mysql mysql-5.5 mysql $(glance image-list | awk '/ trusty-mysql / { print $2 }') mysql-server-5.5 1" }
+    - { index: "~/.executed/trove-initialize-03", command: "mysql -u trove -p{{ TROVE_DBPASS }} -h controller trove -e \"update datastores set default_version_id=(select datastore_versions.id from datastore_versions where datastores.id=datastore_versions.datastore_id limit 1)\"" }
+    #- { index: "~/.executed/trove-initialize-04", command: "trove --debug create trusty-mysql 2 --size=2" }
+  environment: ADMIN_OPENRC
+
+
+
+
+

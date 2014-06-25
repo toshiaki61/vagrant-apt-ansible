@@ -29,8 +29,7 @@ glance image-download "cirros-0.3.2-x86_64" > /dev/null
 ceilometer meter-list | grep download
 ceilometer statistics -m image.download -p 60
 
-sudo -u trove trove-manage --config-file=/etc/trove/trove.conf datastore_version_update mysql mysql-5.5 mysql $(glance image-list | awk '/ cirros/ { print $2 }') mysql-server-5.5 1
 
-mysql -u trove -ppass -h controller trove -e "update datastores set default_version_id=(select datastore_versions.id from datastore_versions where datastores.id=datastore_versions.datastore_id limit 1)"
-trove list
-trove --debug create db1 2 --size=2
+trove --debug create trusty-mysql 2 --size=2
+
+

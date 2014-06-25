@@ -1,2 +1,3 @@
 ---
 - include: trove.yml
+- include: prepare-image.yml
